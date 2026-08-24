@@ -372,7 +372,7 @@ Use a 64-char lowercase hex string as `passwordHash` in fixtures (for example 64
 
 **Green:** all rows above pass with the fake DB only. Confirmed 2026-08-24: 16 user-service tests plus 7 Phase 1 tests, 23 passed.
 
-### Phase 3: Auth HTTP endpoints - PLANNED
+### Phase 3: Auth HTTP endpoints - COMPLETED
 
 **Objective**: Register, login, and logout are callable over HTTP.
 
@@ -447,7 +447,7 @@ Call the exported `POST` handlers with `Request` objects. Mock `@/lib/services/u
 
 **Red:** missing routes/validators → import failures or failed status/body assertions.
 
-**Green:** all handler and validation tests pass against mocks.
+**Green:** all handler and validation tests pass against mocks. Confirmed 2026-08-24: 22 Phase 3 tests plus prior phases, 45 passed.
 
 ### Phase 4: Auth UI and MCQ stub - PLANNED
 
@@ -681,16 +681,16 @@ function hashesEqual(a: string, b: string): boolean {
 - [ ] A teacher can register with first name, last name, username, email, and password
 - [ ] The password is hashed in the browser with SHA-256 before the register POST; D1 stores only `password_hash`
 - [ ] Username and email may be the same string; both columns are still required and unique
-- [ ] Duplicate username returns 409; duplicate email returns 409
+- [x] Duplicate username returns 409; duplicate email returns 409
 - [ ] After a successful register, the browser is on `/mcqs`
 - [ ] A teacher can log in with username + password; the password is hashed in the browser before the login POST
 - [ ] Wrong password or unknown username returns 401 with a generic error; `/mcqs` is not shown
 - [ ] After a successful login, the browser is on `/mcqs`
 - [ ] `/mcqs` is a stub only (no MCQ features) and includes Logout
 - [ ] Logout POSTs `/api/auth/logout` and then shows `/login`
-- [ ] API success payloads never include `password` or `password_hash`
+- [x] API success payloads never include `password` or `password_hash`
 - [x] User service exposes create, get, update, and delete even though the UI only uses create and get-by-username
-- [ ] No cookies, tokens, or session records are created
+- [x] No cookies, tokens, or session records are created
 - [ ] `npm run lint`, `npm run test`, and `npm run build` succeed after implementation
 - [ ] Register and login are verified against the Workers runtime (`npm run preview`) or an equivalent D1-backed path, not inspection alone
 
@@ -836,6 +836,6 @@ When working with this PRD:
 ## Current Status
 
 **Last Updated**: 2026-08-24
-**Current Phase**: Phase 2 complete; waiting for review before Phase 3
-**Status**: Phase 2 COMPLETED
-**Next Steps**: After review, Phase 3 — write failing auth validation and route tests, then implement register/login/logout HTTP endpoints
+**Current Phase**: Phase 3 complete; waiting for review before Phase 4
+**Status**: Phase 3 COMPLETED
+**Next Steps**: After review, Phase 4 — write failing hash/UI tests, then implement login/register forms, MCQ stub, and logout

@@ -11,7 +11,7 @@ the problem, the primary user, and the current state. Two or three sentences.
 Keep it current. An out-of-date description here misleads every future conversation.
 -->
 
-This is Quiz Maker for multiple teachers. Phase 1 (D1 `users` table + Vitest) is in place; register/login/logout are not built yet.
+This is Quiz Maker for multiple teachers. Phase 2 (D1 `users` table, Vitest, and user service) is in place; register/login/logout HTTP and UI are not built yet.
 The technical PRD in `ai-workspace/register-login-logout_prd.md` is the source of truth for the current phase of work.
 
 ## Stack

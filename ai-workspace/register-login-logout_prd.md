@@ -321,7 +321,7 @@ Read `wrangler.jsonc` and every `migrations/*.sql` file from disk (repo artifact
 
 **Phase 1 is not done on green tests alone.** Also: `npx wrangler d1 migrations apply km-quizmaker-db --local` succeeds. Do not treat `npm run dev` as proof. Local apply succeeded 2026-08-24 (`PRAGMA table_info(users)` shows the eight columns). Remote migrations were not applied.
 
-### Phase 2: User service - PLANNED
+### Phase 2: User service - COMPLETED
 
 **Objective**: All user persistence goes through one service; route handlers do not call `env.DB` directly.
 
@@ -370,7 +370,7 @@ Use a 64-char lowercase hex string as `passwordHash` in fixtures (for example 64
 
 **Red:** `user-service.ts` missing or functions unimplemented → import/runtime failures or failed assertions.
 
-**Green:** all rows above pass with the fake DB only.
+**Green:** all rows above pass with the fake DB only. Confirmed 2026-08-24: 16 user-service tests plus 7 Phase 1 tests, 23 passed.
 
 ### Phase 3: Auth HTTP endpoints - PLANNED
 
@@ -689,7 +689,7 @@ function hashesEqual(a: string, b: string): boolean {
 - [ ] `/mcqs` is a stub only (no MCQ features) and includes Logout
 - [ ] Logout POSTs `/api/auth/logout` and then shows `/login`
 - [ ] API success payloads never include `password` or `password_hash`
-- [ ] User service exposes create, get, update, and delete even though the UI only uses create and get-by-username
+- [x] User service exposes create, get, update, and delete even though the UI only uses create and get-by-username
 - [ ] No cookies, tokens, or session records are created
 - [ ] `npm run lint`, `npm run test`, and `npm run build` succeed after implementation
 - [ ] Register and login are verified against the Workers runtime (`npm run preview`) or an equivalent D1-backed path, not inspection alone
@@ -836,6 +836,6 @@ When working with this PRD:
 ## Current Status
 
 **Last Updated**: 2026-08-24
-**Current Phase**: Phase 1 complete; waiting for review before Phase 2
-**Status**: Phase 1 COMPLETED
-**Next Steps**: After review, Phase 2 — write failing user-service tests, then implement create/read/update/delete against mocked D1
+**Current Phase**: Phase 2 complete; waiting for review before Phase 3
+**Status**: Phase 2 COMPLETED
+**Next Steps**: After review, Phase 3 — write failing auth validation and route tests, then implement register/login/logout HTTP endpoints

@@ -11,9 +11,8 @@ the problem, the primary user, and the current state. Two or three sentences.
 Keep it current. An out-of-date description here misleads every future conversation.
 -->
 
-This is an unmodified AISprints starter. No application features have been built yet.
-The technical PRD in `ai-workspace/` is the source of truth for what is being built and
-for the current phase of work.
+This is Quiz Maker for multiple teachers. Phase 1 (D1 `users` table + Vitest) is in place; register/login/logout are not built yet.
+The technical PRD in `ai-workspace/register-login-logout_prd.md` is the source of truth for the current phase of work.
 
 ## Stack
 
@@ -23,9 +22,11 @@ for the current phase of work.
 - **shadcn/ui** on Base UI, `base-nova` style, with Lucide icons
 - **TypeScript** in strict mode
 - **Wrangler** for Cloudflare configuration, secrets, and deployment
+- **Cloudflare D1** bound as `DB` (`km-quizmaker-db`); `users` migration applied locally
+- **Vitest** for unit tests (`npm run test`)
 
-No database, authentication, testing framework, or AI SDK is installed yet. Do not
-write code that imports one without adding it first and telling the user.
+Authentication and the AI SDK are not installed yet. Do not write code that imports
+an AI SDK without adding it first and telling the user.
 
 ## Layout
 
@@ -49,6 +50,8 @@ Import through the `@/` alias, which maps to `src/`.
 | `npm run preview` | Build and run on the local **Workers** runtime |
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
+| `npm run test` | Vitest unit tests (single run) |
+| `npm run test:watch` | Vitest in watch mode |
 | `npm run deploy` | Build and deploy to Cloudflare |
 | `npm run cf-typegen` | Regenerate `cloudflare-env.d.ts` after changing bindings |
 

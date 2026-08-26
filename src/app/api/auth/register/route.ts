@@ -1,6 +1,9 @@
 import { validateRegisterBody } from "@/lib/auth-validation";
 import { createUser, isUserConflictError } from "@/lib/services/user-service";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   let body: unknown;
   try {
@@ -29,6 +32,7 @@ export async function POST(request: Request) {
       return Response.json({ error: error.message }, { status: 409 });
     }
 
+    console.error("Register failed:", error);
     return Response.json({ error: "Unable to register" }, { status: 500 });
   }
 }

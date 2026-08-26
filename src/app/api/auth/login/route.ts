@@ -1,6 +1,9 @@
 import { validateLoginBody } from "@/lib/auth-validation";
 import { getUserByUsername, hashesEqual } from "@/lib/services/user-service";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   let body: unknown;
   try {
@@ -32,7 +35,8 @@ export async function POST(request: Request) {
     };
 
     return Response.json({ user }, { status: 200 });
-  } catch {
+  } catch (error) {
+    console.error("Login failed:", error);
     return Response.json({ error: "Unable to login" }, { status: 500 });
   }
 }

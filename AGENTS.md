@@ -11,8 +11,8 @@ the problem, the primary user, and the current state. Two or three sentences.
 Keep it current. An out-of-date description here misleads every future conversation.
 -->
 
-This is Quiz Maker for multiple teachers. Phase 3 (D1 `users` table, user service, and register/login/logout HTTP endpoints) is in place; the auth UI and MCQ stub are not built yet.
-The technical PRD in `ai-workspace/register-login-logout_prd.md` is the source of truth for the current phase of work.
+This is Quiz Maker for multiple teachers. Identity is in place and verified locally: D1 `users`, user service, register/login/logout HTTP, shadcn auth pages, and an MCQ stub with logout.
+The technical PRD in `ai-workspace/register-login-logout_prd.md` is the source of truth for this feature.
 
 ## Stack
 
@@ -32,6 +32,7 @@ an AI SDK without adding it first and telling the user.
 
 ```
 src/app/            Routes, layouts, and global styles (App Router)
+src/components/auth/ Login, register, and MCQ-stub client forms
 src/components/ui/  shadcn/ui components (generated; avoid hand-editing)
 src/lib/            Shared utilities and services
 ai-workspace/       Technical PRDs and planning documents
@@ -55,8 +56,7 @@ Import through the `@/` alias, which maps to `src/`.
 | `npm run deploy` | Build and deploy to Cloudflare |
 | `npm run cf-typegen` | Regenerate `cloudflare-env.d.ts` after changing bindings |
 
-`npm run dev` runs on Node and will not surface Workers-specific problems. Verify
-anything runtime-sensitive with `npm run preview`.
+`npm run dev` runs on Node. Local D1 is available in that process because `next.config.ts` calls `initOpenNextCloudflareForDev()`. Still use `npm run preview` to catch Workers-only problems.
 
 ## Working agreements
 

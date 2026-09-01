@@ -5,7 +5,7 @@ Date last modified: 2026-09-01
 
 ## Overview/Problem
 
-Quiz Maker is a greenfield application for multiple teachers to collaborate on a shared test bank of multiple-choice questions. Identity is already in place: teachers can register, log in, and land on `/mcqs`. This sprint replaces the former stub with a complete MCQ management flow on the same identity foundation (no sessions, no auth gate).
+Quiz Maker is a greenfield application for multiple teachers to collaborate on a shared test bank of multiple-choice questions. Identity is already in place: teachers can register, log in, and land on `/mcqs`. This sprint replaced the former stub with a complete MCQ management flow on the same identity foundation (no sessions, no auth gate). Phases 1–4 are complete; production create, update, preview, and delete were verified on 2026-09-01.
 
 ---
 
@@ -66,8 +66,10 @@ Do **not** create a new D1 database. Add a second migration and apply it **local
 
 1. `npx wrangler d1 migrations create km-quizmaker-db create-mcqs`
 2. Write the three `CREATE TABLE` statements into the generated SQL file
-3. Apply **locally only**: `npx wrangler d1 migrations apply km-quizmaker-db --local`
-4. Never apply with `--remote`
+3. Apply **locally only** during implementation: `npx wrangler d1 migrations apply km-quizmaker-db --local`
+4. Agents must not apply `--remote` or `npm run deploy` unless the product owner explicitly asks
+
+Product-owner close-out (2026-09-01): remote D1 migrations were applied and the Worker was deployed. Create, update, preview, and delete were verified in production.
 
 ```sql
 CREATE TABLE mcqs (
@@ -413,7 +415,7 @@ Phase 1 tests concatenate every `migrations/*.sql` file. `extractCreateTableBody
 4. Re-check 2026-08-31: `npx wrangler d1 migrations list km-quizmaker-db --local` and `apply --local` → **No migrations to apply**
 5. `PRAGMA table_info(mcqs)` on local D1: `id`, `name`, `question`, `created_by_user_id`, `created_at`, `updated_at` (no `description`)
 
-**Phase 1 is not done on green tests alone.** Local apply succeeded. Remote migrations were not applied.
+**Phase 1 is not done on green tests alone.** Local apply succeeded. Remote migrations were applied later by the product owner on 2026-09-01 as part of production close-out.
 
 ### Phase 2: MCQ service - COMPLETED
 
@@ -803,7 +805,7 @@ Read with `.all()` and take `results` (or `results[0]`). Do not rely on `.first(
 
 - Teaching repository: **ask before adding a dependency**. shadcn add copies source into `src/components/ui/` and is allowed. Do not add Zod or testing-pool-workers.
 - Reuse `getDb()`. Do not create a second Cloudflare context helper.
-- Never apply migrations remotely. Never run `npm run deploy` unless asked.
+- Never apply migrations remotely or run `npm run deploy` unless the product owner explicitly asks. The owner applied remote D1 and deployed on 2026-09-01.
 - Do not edit `cloudflare-env.d.ts` or `package-lock.json` by hand.
 - Identity sprint is unchanged: no cookies, no auth middleware. `/mcqs` is still reachable without a session.
 - `created_by_user_id` is required on insert. The client remembers `user.id` from register/login in sessionStorage and sends it as `createdByUserId`. Logout clears it. This is not a cookie session.
@@ -818,7 +820,9 @@ Read with `.all()` and take `results` (or `results[0]`). Do not rely on `.first(
 
 - [x] Each implementation phase wrote its tests first (red), then implementation (green); a phase was not marked COMPLETED while its tests failed
 - [x] `npm run test` is green for the full suite (identity tests still pass)
-- [x] Local D1 has `mcqs`, `mcq_choices`, and `mcq_attempts` via a migration applied with `--local` only (`0002` + local `0003` rebuild; `PRAGMA table_info(mcqs)` shows `question` and `created_by_user_id`)
+- [x] Local D1 has `mcqs`, `mcq_choices`, and `mcq_attempts` via a migration applied with `--local` (`0002` + local `0003` rebuild; `PRAGMA table_info(mcqs)` shows `question` and `created_by_user_id`)
+- [x] Remote D1 has the same MCQ tables (product owner applied migrations with `--remote` on 2026-09-01)
+- [x] Production Worker is deployed; product owner verified create, update, preview, and delete in the browser
 - [x] Teachers can list all MCQs in a table with name, question, and an actions column
 - [x] Each MCQ row stores `created_by_user_id` for the teacher who created it
 - [x] Create MCQ navigates to the create/edit form
@@ -843,10 +847,11 @@ These are post-implementation checks for this teaching sprint, not production an
 
 | Metric | Target | How Measured |
 |--------|--------|--------------|
-| Teacher can add a question | One row in `mcqs` plus at least two `mcq_choices` after Save | Local D1 `SELECT` |
+| Teacher can add a question | One row in `mcqs` plus at least two `mcq_choices` after Save | Local D1 `SELECT` + production create |
 | Choice limits | UI and API both reject 1 and 7 choices | Vitest + form walkthrough |
 | Attempt scoring | Selecting the correct choice stores `is_correct = 1`; wrong stores `0` | Preview walkthrough + local D1 |
 | Identity still works | Register / login / logout unchanged | Existing Vitest suite + login still reaches `/mcqs` |
+| Production CRUD | Create, update, preview, and delete work on the deployed Worker | Product-owner walkthrough 2026-09-01 |
 
 ---
 
@@ -964,14 +969,30 @@ When working with this PRD:
 10. Add implementation details (real file names) under Technical Implementation Details as code is written.
 11. Mark acceptance criteria when they are verified, not when the file exists.
 12. Append Troubleshooting entries when bugs are fixed.
-13. Update `AGENTS.md` project blurb when this feature is verified.
+13. Update `AGENTS.md` project blurb when this feature is verified. Done 2026-09-01.
 14. Verify with `npm run lint`, `npm run test`, and `npm run build`. Exercise list → create → edit → preview attempt → delete in the browser when possible. D1 on `next dev` requires `initOpenNextCloudflareForDev()`.
+15. Do not treat this PRD as open work. The sprint is closed; later features get a new PRD.
+
+---
+
+### Verification log
+
+| Date | What | Result |
+|------|------|--------|
+| 2026-08-31 | Phase 1 TDD + local D1 migrate (`0002` + `0003`) | 10 schema tests green; local `mcqs` has `question` and `created_by_user_id` |
+| 2026-09-01 | Phase 2–3 TDD (service + HTTP) | 26 service + 31 handler/validation tests green |
+| 2026-09-01 | Phase 4 TDD + lint + build | 30 UI tests; full suite 162; lint and build OK |
+| 2026-09-01 | Product owner: local UI (list, create, edit, preview, delete) | Verified |
+| 2026-09-01 | Product owner: remote D1 migrate + production deploy | Remote schema applied; Worker deployed |
+| 2026-09-01 | Product owner: production create, update, preview, delete | Verified |
+
+This PRD is the as-built record. Agents still must not run `--remote` or `npm run deploy` unless asked.
 
 ---
 
 ## Current Status
 
 **Last Updated**: 2026-09-01
-**Current Phase**: Phase 4 - MCQ UI
-**Status**: COMPLETED and reviewed on `feature/mcq-crud-v2`. 30 Phase 4 tests green; full suite 162. Shared title, equal-width Save/Cancel, and Back to MCQ page are included.
-**Next Steps**: Feature complete. Update `AGENTS.md`. Commit and push Phase 4. Do not start a new sprint unless asked.
+**Current Phase**: MCQ CRUD sprint closed (Phases 1–4 complete and verified)
+**Status**: List, create, edit, preview, and delete shipped. Local suite green. Product owner applied remote D1 migrations, deployed to production, and confirmed create, update, preview, and delete on the live Worker. This PRD is the as-built record; no further implementation is planned under it.
+**Next Steps**: Later sprints own new work (sessions, AI generation, attempt history). Do not start that work from this PRD.

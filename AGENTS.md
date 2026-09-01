@@ -11,8 +11,8 @@ the problem, the primary user, and the current state. Two or three sentences.
 Keep it current. An out-of-date description here misleads every future conversation.
 -->
 
-This is Quiz Maker for multiple teachers. Identity is in place (register/login/logout, no sessions). Teachers can list, create, edit, preview, and delete shared MCQs with two-to-six choices and record a preview attempt. The creator is stored as `created_by_user_id`; the client remembers `user.id` in sessionStorage for create and clears it on logout.
-MCQ CRUD is specified in `ai-workspace/mcq-crud_prd.md`. Identity remains in `ai-workspace/register-login-logout_prd.md`.
+This is Quiz Maker for multiple teachers. Identity is in place (register/login/logout, no sessions). Teachers can list, create, edit, preview, and delete shared MCQs with two-to-six choices and record a preview attempt. The creator is stored as `created_by_user_id`; the client remembers `user.id` in sessionStorage for create and clears it on logout. MCQ CRUD is live in production (remote D1 + Worker deploy verified 2026-09-01).
+MCQ CRUD is specified in `ai-workspace/mcq-crud_prd.md` (sprint closed). Identity remains in `ai-workspace/register-login-logout_prd.md`.
 
 ## Stack
 

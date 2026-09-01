@@ -478,7 +478,7 @@ Service notes as built:
 - `createAttempt` snapshots `is_correct` from the selected choice. Throws `McqNotFoundError`, `McqChoiceNotFoundError`, or `McqChoiceMismatchError`.
 - Typed `McqValidationError` for field/choice-count failures.
 
-### Phase 3: MCQ HTTP endpoints - PLANNED
+### Phase 3: MCQ HTTP endpoints - COMPLETED
 
 **Objective**: List, create, get, update, delete, and attempts are callable over HTTP.
 
@@ -492,11 +492,11 @@ Service notes as built:
 
 **Deliverables**:
 
-- `src/app/api/mcqs/route.ts`
-- `src/app/api/mcqs/[id]/route.ts`
-- `src/app/api/mcqs/[id]/attempts/route.ts`
-- `src/lib/mcq-validation.ts`
-- Matching `*.test.ts` files (green)
+- `src/app/api/mcqs/route.ts` (GET list, POST create)
+- `src/app/api/mcqs/[id]/route.ts` (GET / PUT / DELETE)
+- `src/app/api/mcqs/[id]/attempts/route.ts` (POST attempt)
+- `src/lib/mcq-validation.ts` (`validateCreateMcqBody`, `validateUpdateMcqBody`, `validateAttemptBody`)
+- Matching `*.test.ts` files (green — 31 tests)
 
 #### Testing Plan — Phase 3
 
@@ -575,9 +575,17 @@ Call the exported handlers with `Request` objects. For `[id]` routes, pass `{ pa
 | `returns 404 when the mcq is missing` | |
 | `returns 500 on unexpected failure` | Generic error |
 
-**Red:** missing routes/validators → import failures or failed status/body assertions.
+**Red:** missing routes/validators → import failures. Confirmed 2026-09-01: 4 files failed (`@/lib/mcq-validation` and `./route` unresolved).
 
-**Green:** all handler and validation tests pass against mocks.
+**Green:** all handler and validation tests pass against mocks. Confirmed 2026-09-01: `npm run test -- src/lib/mcq-validation.test.ts src/app/api/mcqs/route.test.ts src/app/api/mcqs/[id]/route.test.ts src/app/api/mcqs/[id]/attempts/route.test.ts` — **31 passed**.
+
+HTTP notes as built:
+
+- Handlers export `dynamic = "force-dynamic"` and `runtime = "nodejs"`. No cookies. No `getDb()` in routes.
+- `[id]` reads `await context.params` (Next.js 16 Promise).
+- Create requires `createdByUserId`. Update ignores it.
+- Attempts: mismatch → 400; missing MCQ or choice → 404.
+- Unexpected errors `console.error` and return the PRD 500 messages.
 
 ### Phase 4: MCQ UI - PLANNED
 
@@ -687,11 +695,14 @@ Query by role and accessible name. Mock `fetch` and `next/navigation`.
 | `src/lib/db.ts` | Existing `getDb()`; reuse, do not duplicate |
 | `src/lib/services/mcq-service.ts` | Phase 2: list / get / create / update / delete / createAttempt |
 | `src/lib/services/mcq-service.test.ts` | Phase 2 service tests (26); mocks `@/lib/db` with an in-memory D1 |
-| `src/lib/mcq-validation.ts` | HTTP body checks |
-| `src/lib/current-user.ts` | Client helper: remember/clear `user.id` in sessionStorage for `createdByUserId` |
+| `src/lib/mcq-validation.ts` | Phase 3 HTTP body checks (no Zod) |
+| `src/lib/mcq-validation.test.ts` | Phase 3 validation tests (10) |
 | `src/app/api/mcqs/route.ts` | GET list, POST create |
+| `src/app/api/mcqs/route.test.ts` | Phase 3 list/create handler tests |
 | `src/app/api/mcqs/[id]/route.ts` | GET / PUT / DELETE one |
+| `src/app/api/mcqs/[id]/route.test.ts` | Phase 3 get/update/delete handler tests |
 | `src/app/api/mcqs/[id]/attempts/route.ts` | POST attempt |
+| `src/app/api/mcqs/[id]/attempts/route.test.ts` | Phase 3 attempt handler tests |
 | `src/components/mcqs/` | List, form, preview client components |
 | `src/app/mcqs/page.tsx` | List page shell (replaces stub) |
 | `src/app/mcqs/new/page.tsx` | Create page shell |
@@ -945,6 +956,6 @@ When working with this PRD:
 ## Current Status
 
 **Last Updated**: 2026-09-01
-**Current Phase**: Phase 2 - MCQ service
-**Status**: COMPLETED on `feature/mcq-crud-v2`. Phase 1 is on origin (`708a824`). MCQ service and 26 mocked-D1 tests are green and reviewed.
-**Next Steps**: Phase 3 — HTTP endpoints, test-first.
+**Current Phase**: Phase 3 - MCQ HTTP endpoints
+**Status**: COMPLETED on `feature/mcq-crud-v2`. 31 Phase 3 tests green (validation + list/create/get/update/delete/attempts). Handlers call the MCQ service only.
+**Next Steps**: Phase 4 — MCQ UI, test-first.

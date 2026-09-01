@@ -410,7 +410,7 @@ Phase 1 tests concatenate every `migrations/*.sql` file. `extractCreateTableBody
 
 **Phase 1 is not done on green tests alone.** Local apply succeeded. Remote migrations were not applied.
 
-### Phase 2: MCQ service - PLANNED
+### Phase 2: MCQ service - COMPLETED
 
 **Objective**: All MCQ / choice / attempt persistence goes through one service; route handlers do not call `env.DB` directly.
 
@@ -426,7 +426,7 @@ Phase 1 tests concatenate every `migrations/*.sql` file. `extractCreateTableBody
 **Deliverables**:
 
 - `src/lib/services/mcq-service.ts`
-- `src/lib/services/mcq-service.test.ts` (green)
+- `src/lib/services/mcq-service.test.ts` (green — 26 tests)
 
 #### Testing Plan — Phase 2
 
@@ -463,10 +463,20 @@ Use a fixture with name `"Arithmetic"`, question `"What is 2 + 2?"`, a `createdB
 | `createAttempt records an incorrect selection as incorrect` | Wrong choice → `isCorrect: false` |
 | `createAttempt rejects a choice that does not belong to the mcq` | Typed error |
 | `createAttempt returns null (or not-found error) when the mcq is missing` | Unknown mcq id |
+| `createAttempt rejects a missing choice` | `McqChoiceNotFoundError` |
 
-**Red:** `mcq-service.ts` missing or unimplemented → import/runtime failures.
+**Red:** `mcq-service.ts` missing or unimplemented → import/runtime failures. Confirmed earlier in the sprint when the module did not exist (Vitest failed to resolve `@/lib/services/mcq-service`).
 
-**Green:** all rows above pass with the fake DB only.
+**Green:** all rows above pass with the fake DB only. Confirmed 2026-09-01: `npm run test -- src/lib/services/mcq-service.test.ts` — **26 passed**.
+
+Service notes as built:
+
+- Reuses `getDb()` from `src/lib/db.ts`. Numbered placeholders. 32-char hex ids via `crypto.getRandomValues`.
+- `createMcq` requires name, question, `createdByUserId`, and 2–6 choices with exactly one correct.
+- `updateMcq` patches name, question, and choices; it does not change `createdByUserId`.
+- `deleteMcq` deletes attempts, then choices, then the MCQ row.
+- `createAttempt` snapshots `is_correct` from the selected choice. Throws `McqNotFoundError`, `McqChoiceNotFoundError`, or `McqChoiceMismatchError`.
+- Typed `McqValidationError` for field/choice-count failures.
 
 ### Phase 3: MCQ HTTP endpoints - PLANNED
 
@@ -675,7 +685,8 @@ Query by role and accessible name. Mock `fetch` and `next/navigation`.
 | `migrations/0002_create-mcqs.sql` | Phase 1 contract: `mcqs` (`id`, `name`, `question`, `created_by_user_id`, timestamps), `mcq_choices`, `mcq_attempts` |
 | `migrations/0003_replace-mcqs-question-and-created-by.sql` | Local rebuild so already-applied first-draft 0002 matches the corrected contract. Same DDL as 0002 |
 | `src/lib/db.ts` | Existing `getDb()`; reuse, do not duplicate |
-| `src/lib/services/mcq-service.ts` | MCQ / choice / attempt persistence |
+| `src/lib/services/mcq-service.ts` | Phase 2: list / get / create / update / delete / createAttempt |
+| `src/lib/services/mcq-service.test.ts` | Phase 2 service tests (26); mocks `@/lib/db` with an in-memory D1 |
 | `src/lib/mcq-validation.ts` | HTTP body checks |
 | `src/lib/current-user.ts` | Client helper: remember/clear `user.id` in sessionStorage for `createdByUserId` |
 | `src/app/api/mcqs/route.ts` | GET list, POST create |
@@ -933,7 +944,7 @@ When working with this PRD:
 
 ## Current Status
 
-**Last Updated**: 2026-08-31
-**Current Phase**: Phase 1 - D1 MCQ tables
-**Status**: COMPLETED. Schema contract tests went red (no MCQ SQL), then `0002_create-mcqs.sql` was written and applied `--local` only. Final `mcqs` columns: `id`, `name`, `question`, `created_by_user_id`, `created_at`, `updated_at`. Re-confirmed 2026-08-31: 10 contract tests green; local migrations list has nothing pending; `PRAGMA table_info(mcqs)` matches the contract.
-**Next Steps**: Phase 2 — MCQ service, test-first (red), then implement until green. Update this PRD when Phase 2 status changes.
+**Last Updated**: 2026-09-01
+**Current Phase**: Phase 2 - MCQ service
+**Status**: COMPLETED on `feature/mcq-crud-v2`. Phase 1 is on origin (`708a824`). MCQ service and 26 mocked-D1 tests are green and reviewed.
+**Next Steps**: Phase 3 — HTTP endpoints, test-first.

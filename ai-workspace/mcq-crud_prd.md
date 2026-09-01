@@ -1,11 +1,11 @@
 Date created: 2026-08-31
-Date last modified: 2026-08-31 (schema correction: `question` and `created_by_user_id`)
+Date last modified: 2026-09-01
 
 # MCQ CRUD - Technical PRD
 
 ## Overview/Problem
 
-Quiz Maker is a greenfield application for multiple teachers to collaborate on a shared test bank of multiple-choice questions. Identity is already in place: teachers can register, log in, and land on an MCQ stub at `/mcqs` that only shows placeholder copy and a logout control. Without question CRUD, that stub is a dead end — teachers still have no way to create, edit, preview, or delete multiple-choice questions, manage their choices, or record an attempt against a question. This sprint replaces the stub with a complete MCQ management flow on the same identity foundation (no sessions, no auth gate).
+Quiz Maker is a greenfield application for multiple teachers to collaborate on a shared test bank of multiple-choice questions. Identity is already in place: teachers can register, log in, and land on `/mcqs`. This sprint replaces the former stub with a complete MCQ management flow on the same identity foundation (no sessions, no auth gate).
 
 ---
 
@@ -282,11 +282,13 @@ Use shadcn/ui from `@/components/ui`. Do not add `react-hook-form`. Pages stay t
 
 Add shadcn components that are not already in the repo: `dropdown-menu`, `textarea`, `radio-group` (`npx shadcn@latest add @shadcn/<name>`). Do not hand-edit generated files in `src/components/ui/` beyond using them. `table`, `button`, `card`, `field`, `input`, `label`, `dialog` are already installed.
 
-Keep Log out on the list page (POST `/api/auth/logout` then navigate to `/login`), same contract as the stub.
+Keep Log out on the list page (POST `/api/auth/logout` then navigate to `/login`), same contract as the former stub.
+
+All `/mcqs` routes share `src/app/mcqs/layout.tsx`, which renders a bold page title **Multiple choice Questions**. Card titles under that stay as `h2` (Question bank / Create MCQ / Edit MCQ / the MCQ name on preview).
 
 #### MCQ list (/mcqs)
 
-- Replaces `McqStub`. Heading **Question bank**
+- Replaces `McqStub`. Card heading **Question bank**
 - **Create MCQ** button navigates to `/mcqs/new`
 - **Log out** button unchanged in behavior
 - Table columns: **Name**, **Question**, **Actions**
@@ -305,8 +307,10 @@ Keep Log out on the list page (POST `/api/auth/logout` then navigate to `/login`
   - **Choices** fieldset: two text fields on create; each row has choice text plus a radio in a group **Correct answer** so exactly one is selected
   - **Add choice** — disabled at 6
   - **Remove** on a choice row — disabled when only two remain
+- **Save** and **Cancel** sit in a two-column row and each take half the form width so Cancel stays on screen
 - **Save** POSTs `/api/mcqs` including `createdByUserId` from the last successful login/register (create, expect 201) or PUTs `/api/mcqs/{id}` without changing creator (edit, expect 200), then navigates to `/mcqs`
 - **Cancel** navigates to `/mcqs` without saving (no fetch)
+- Edit (and preview) also show **Back to MCQ page** above the card, linking to `/mcqs`
 - Client validation before fetch: name required; question required; 2–6 choices; every choice has text; exactly one correct
 - If there is no remembered user id on create, show an error and do not POST (direct visit to `/mcqs/new` without logging in)
 - Edit loads `GET /api/mcqs/{id}` and prefills, including choice ids so Save can send them back
@@ -319,7 +323,8 @@ Keep Log out on the list page (POST `/api/auth/logout` then navigate to `/login`
 - **Check answer** (or equivalent) POSTs `/api/mcqs/{id}/attempts` with the selected `choiceId`
 - After 201, show whether the selected choice was correct or incorrect using `attempt.isCorrect`
 - Do not submit if no choice is selected
-- **Back** navigates to `/mcqs` without recording an attempt
+- **Back** in the preview card navigates to `/mcqs` without recording an attempt
+- **Back to MCQ page** above the card (shared with edit) also returns to `/mcqs`
 
 #### Shared UI behavior
 
@@ -587,7 +592,7 @@ HTTP notes as built:
 - Attempts: mismatch → 400; missing MCQ or choice → 404.
 - Unexpected errors `console.error` and return the PRD 500 messages.
 
-### Phase 4: MCQ UI - PLANNED
+### Phase 4: MCQ UI - COMPLETED
 
 **Objective**: A teacher can list, create, edit, preview, and delete MCQs in the browser, including two-to-six choices and recording an attempt on preview.
 
@@ -605,8 +610,9 @@ HTTP notes as built:
 
 - `src/components/mcqs/mcq-list.tsx`, `mcq-form.tsx`, `mcq-preview.tsx` (+ tests)
 - `src/lib/mcq-form-validation.ts` (+ tests)
-- Page shells under `src/app/mcqs/`
-- `src/components/auth/mcq-stub.tsx` removed or reduced to unused; stub tests replaced by list tests (logout coverage moves to `mcq-list.test.tsx`)
+- Page shells under `src/app/mcqs/` plus shared `layout.tsx` (bold **Multiple choice Questions** title)
+- `src/components/mcqs/back-to-mcq-page.tsx` on edit and preview
+- `src/components/auth/mcq-stub.tsx` removed; stub tests replaced by list tests (logout coverage moves to `mcq-list.test.tsx`)
 
 #### Testing Plan — Phase 4
 
@@ -671,7 +677,7 @@ Query by role and accessible name. Mock `fetch` and `next/navigation`.
 
 **Red:** missing modules/components → import failures or missing roles.
 
-**Green:** form + list + preview tests pass. `npm run lint` and `npm run build` succeed.
+**Green:** Confirmed 2026-09-01: Phase 4 files **30 passed**; full suite **162 passed**. `npm run lint` and `npm run build` succeeded. `McqStub` removed; logout lives on `McqList`. Login/register remember `user.id` in sessionStorage; logout clears it. Reviewed in the browser; follow-up UI (shared bold title, equal-width Save/Cancel, Back to MCQ page on edit/preview) is part of this phase.
 
 **Status Markers**:
 
@@ -703,11 +709,21 @@ Query by role and accessible name. Mock `fetch` and `next/navigation`.
 | `src/app/api/mcqs/[id]/route.test.ts` | Phase 3 get/update/delete handler tests |
 | `src/app/api/mcqs/[id]/attempts/route.ts` | POST attempt |
 | `src/app/api/mcqs/[id]/attempts/route.test.ts` | Phase 3 attempt handler tests |
-| `src/components/mcqs/` | List, form, preview client components |
+| `src/lib/current-user.ts` | sessionStorage helper for `user.id` (not a session cookie) |
+| `src/lib/mcq-form-validation.ts` | Phase 4 client form checks (no Zod) |
+| `src/lib/mcq-form-validation.test.ts` | Phase 4 form-validation tests (7) |
+| `src/components/mcqs/mcq-list.tsx` | List table, ellipsis actions, logout |
+| `src/components/mcqs/mcq-list.test.tsx` | Phase 4 list/logout tests (9) |
+| `src/components/mcqs/mcq-form.tsx` | Shared create/edit form |
+| `src/components/mcqs/mcq-form.test.tsx` | Phase 4 create/edit tests (9) |
+| `src/components/mcqs/mcq-preview.tsx` | Preview + attempt |
+| `src/components/mcqs/mcq-preview.test.tsx` | Phase 4 preview tests (5) |
+| `src/app/mcqs/layout.tsx` | Shared bold title **Multiple choice Questions** |
 | `src/app/mcqs/page.tsx` | List page shell (replaces stub) |
 | `src/app/mcqs/new/page.tsx` | Create page shell |
-| `src/app/mcqs/[id]/edit/page.tsx` | Edit page shell |
-| `src/app/mcqs/[id]/preview/page.tsx` | Preview page shell |
+| `src/app/mcqs/[id]/edit/page.tsx` | Edit page shell + Back to MCQ page |
+| `src/app/mcqs/[id]/preview/page.tsx` | Preview page shell + Back to MCQ page |
+| `src/components/mcqs/back-to-mcq-page.tsx` | Link back to `/mcqs` on edit and preview |
 
 ### Implementation Patterns
 
@@ -800,24 +816,24 @@ Read with `.all()` and take `results` (or `results[0]`). Do not rely on `.first(
 
 ## Acceptance Criteria
 
-- [ ] Each implementation phase wrote its tests first (red), then implementation (green); a phase was not marked COMPLETED while its tests failed
-- [ ] `npm run test` is green for the full suite (identity tests still pass)
+- [x] Each implementation phase wrote its tests first (red), then implementation (green); a phase was not marked COMPLETED while its tests failed
+- [x] `npm run test` is green for the full suite (identity tests still pass)
 - [x] Local D1 has `mcqs`, `mcq_choices`, and `mcq_attempts` via a migration applied with `--local` only (`0002` + local `0003` rebuild; `PRAGMA table_info(mcqs)` shows `question` and `created_by_user_id`)
-- [ ] Teachers can list all MCQs in a table with name, question, and an actions column
-- [ ] Each MCQ row stores `created_by_user_id` for the teacher who created it
-- [ ] Create MCQ navigates to the create/edit form
-- [ ] The form starts with two choices and allows adding up to six
-- [ ] The form cannot submit with fewer than two choices or more than six
-- [ ] Save persists the MCQ and its choices through the MCQ service (not from a route handler calling D1)
-- [ ] Cancel leaves the form without saving
-- [ ] Edit loads an existing MCQ and Save updates it
-- [ ] Ellipsis actions include Edit, Preview, and Delete
-- [ ] Delete removes the MCQ (and its choices and attempts)
-- [ ] Preview shows the question and choices without revealing the answer until an attempt is submitted
-- [ ] Submitting a preview selection records an attempt with the MCQ, the selected choice, and whether it was correct
-- [ ] API success payloads use camelCase and never return D1 snake_case column names as the public contract
-- [ ] No cookies, tokens, or session records are created
-- [ ] `npm run lint`, `npm run test`, and `npm run build` succeed after implementation
+- [x] Teachers can list all MCQs in a table with name, question, and an actions column
+- [x] Each MCQ row stores `created_by_user_id` for the teacher who created it
+- [x] Create MCQ navigates to the create/edit form
+- [x] The form starts with two choices and allows adding up to six
+- [x] The form cannot submit with fewer than two choices or more than six
+- [x] Save persists the MCQ and its choices through the MCQ service (not from a route handler calling D1)
+- [x] Cancel leaves the form without saving
+- [x] Edit loads an existing MCQ and Save updates it
+- [x] Ellipsis actions include Edit, Preview, and Delete
+- [x] Delete removes the MCQ (and its choices and attempts)
+- [x] Preview shows the question and choices without revealing the answer until an attempt is submitted
+- [x] Submitting a preview selection records an attempt with the MCQ, the selected choice, and whether it was correct
+- [x] API success payloads use camelCase and never return D1 snake_case column names as the public contract
+- [x] No cookies, tokens, or session records are created
+- [x] `npm run lint`, `npm run test`, and `npm run build` succeed after implementation
 
 ---
 
@@ -956,6 +972,6 @@ When working with this PRD:
 ## Current Status
 
 **Last Updated**: 2026-09-01
-**Current Phase**: Phase 3 - MCQ HTTP endpoints
-**Status**: COMPLETED on `feature/mcq-crud-v2`. 31 Phase 3 tests green (validation + list/create/get/update/delete/attempts). Handlers call the MCQ service only.
-**Next Steps**: Phase 4 — MCQ UI, test-first.
+**Current Phase**: Phase 4 - MCQ UI
+**Status**: COMPLETED and reviewed on `feature/mcq-crud-v2`. 30 Phase 4 tests green; full suite 162. Shared title, equal-width Save/Cancel, and Back to MCQ page are included.
+**Next Steps**: Feature complete. Update `AGENTS.md`. Commit and push Phase 4. Do not start a new sprint unless asked.

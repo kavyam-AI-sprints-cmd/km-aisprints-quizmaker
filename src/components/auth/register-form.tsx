@@ -9,6 +9,7 @@ import {
   errorMessageFromResponse,
   validateRegisterFields,
 } from "@/lib/auth-form-validation";
+import { rememberUserIdFromPayload } from "@/lib/current-user";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -67,6 +68,11 @@ export function RegisterForm({ ...props }: ComponentProps<typeof Card>) {
       });
 
       if (response.status === 201) {
+        try {
+          rememberUserIdFromPayload(await response.json());
+        } catch {
+          // Navigate even if the payload cannot be parsed.
+        }
         router.push("/mcqs");
         return;
       }

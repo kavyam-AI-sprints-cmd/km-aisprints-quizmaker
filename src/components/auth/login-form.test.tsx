@@ -114,6 +114,7 @@ describe("LoginForm", () => {
     fetchMock.mockResolvedValue(
       new Response(JSON.stringify({ error: "Invalid username or password" }), {
         status: 401,
+        headers: { "Content-Type": "application/json" },
       }),
     );
     render(<LoginForm />);

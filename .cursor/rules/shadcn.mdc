@@ -13,7 +13,7 @@ This project is initialized with shadcn/ui built on **Base UI** (not Radix), usi
 
 Already installed in `src/components/ui/`:
 
-`badge` `button` `card` `dialog` `field` `input` `label` `separator` `table`
+`badge` `button` `card` `dialog` `dropdown-menu` `field` `input` `label` `radio-group` `separator` `table` `textarea`
 
 Import them from the `@/components/ui` alias:
 

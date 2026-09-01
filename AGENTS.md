@@ -11,8 +11,8 @@ the problem, the primary user, and the current state. Two or three sentences.
 Keep it current. An out-of-date description here misleads every future conversation.
 -->
 
-This is Quiz Maker for multiple teachers. Identity is in place and verified locally: D1 `users`, user service, register/login/logout HTTP, shadcn auth pages, and an MCQ stub with logout.
-The technical PRD in `ai-workspace/register-login-logout_prd.md` is the source of truth for this feature.
+This is Quiz Maker for multiple teachers. Identity is in place (register/login/logout, no sessions). Teachers can list, create, edit, preview, and delete shared MCQs with two-to-six choices and record a preview attempt. The creator is stored as `created_by_user_id`; the client remembers `user.id` in sessionStorage for create and clears it on logout.
+MCQ CRUD is specified in `ai-workspace/mcq-crud_prd.md`. Identity remains in `ai-workspace/register-login-logout_prd.md`.
 
 ## Stack
 
@@ -22,7 +22,7 @@ The technical PRD in `ai-workspace/register-login-logout_prd.md` is the source o
 - **shadcn/ui** on Base UI, `base-nova` style, with Lucide icons
 - **TypeScript** in strict mode
 - **Wrangler** for Cloudflare configuration, secrets, and deployment
-- **Cloudflare D1** bound as `DB` (`km-quizmaker-db`); `users` migration applied locally
+- **Cloudflare D1** bound as `DB` (`km-quizmaker-db`); `users`, `mcqs`, `mcq_choices`, and `mcq_attempts` migrations applied locally
 - **Vitest** for unit tests (`npm run test`)
 
 Authentication and the AI SDK are not installed yet. Do not write code that imports
@@ -32,7 +32,8 @@ an AI SDK without adding it first and telling the user.
 
 ```
 src/app/            Routes, layouts, and global styles (App Router)
-src/components/auth/ Login, register, and MCQ-stub client forms
+src/components/mcqs/ List, create/edit form, and preview client components
+src/components/auth/ Login and register client forms
 src/components/ui/  shadcn/ui components (generated; avoid hand-editing)
 src/lib/            Shared utilities and services
 ai-workspace/       Technical PRDs and planning documents

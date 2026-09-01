@@ -10,6 +10,7 @@ import {
   errorMessageFromResponse,
   validateLoginFields,
 } from "@/lib/auth-form-validation";
+import { rememberUserIdFromPayload } from "@/lib/current-user";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -59,6 +60,11 @@ export function LoginForm({
       });
 
       if (response.status === 200) {
+        try {
+          rememberUserIdFromPayload(await response.json());
+        } catch {
+          // Navigate even if the payload cannot be parsed.
+        }
         router.push("/mcqs");
         return;
       }

@@ -162,6 +162,7 @@ describe("RegisterForm", () => {
     fetchMock.mockResolvedValue(
       new Response(JSON.stringify({ error: "Username already taken" }), {
         status: 409,
+        headers: { "Content-Type": "application/json" },
       }),
     );
     render(<RegisterForm />);

@@ -25,7 +25,7 @@ export type AttemptBody = {
   choiceId: string;
 };
 
-function fail(error: string): ValidationResult<never> {
+function fail(error: string): { ok: false; error: string } {
   return { ok: false, error };
 }
 

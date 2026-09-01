@@ -1,0 +1,28 @@
+---
+description: Get user approval, then commit and push each completed implementation phase
+alwaysApply: true
+---
+
+# Phase completion: approve, then commit and push
+
+Work is sequenced in technical PRD phases (see `ai-workspace/*_prd.md`). A phase is not finished when the code is green — it is finished when the user has reviewed it and the commit is on the remote feature branch.
+
+## After a phase is implemented
+
+1. Mark the phase COMPLETED in the PRD only after its tests are green.
+2. **Stop.** Summarize what landed and ask the user to review.
+3. **Do not commit or push** until the user explicitly approves (e.g. "looks good, commit", "commit and push Phase N").
+4. On approval, commit **only that phase's files** (implementation, tests, and the PRD update) on the **current feature branch**.
+5. Push that branch to `origin` (`git push` / `git push -u origin HEAD` if it has no upstream). Do not open a PR unless asked.
+
+## Do not
+
+- Auto-commit when tests go green or when you mark a phase COMPLETED
+- Commit to `main` / `master`, or create a new branch, for a phase handoff
+- Mix the next phase's work into the approved phase commit
+- Deploy or apply remote D1 migrations as part of the handoff
+
+```text
+# ❌ BAD — commit as soon as Phase 3 tests pass
+# ✅ GOOD — "Phase 3 is green. Please review; I will commit and push after you approve."
+```
